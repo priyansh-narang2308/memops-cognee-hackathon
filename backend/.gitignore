@@ -1,0 +1,11 @@
+.env
+.env.local
+.env.production
+.cognee_system/
+.data_storage/
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.DS_Store
+*.log
