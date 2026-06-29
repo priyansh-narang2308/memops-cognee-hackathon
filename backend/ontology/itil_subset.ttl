@@ -1,0 +1,55 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix itil: <http://example.org/itil#> .
+
+# Ontology declaration
+<http://example.org/itil> a owl:Ontology ;
+    rdfs:label "ITIL Subset Ontology for Incident Management" .
+
+# Classes
+itil:Service a owl:Class ;
+    rdfs:label "ITIL Service" ;
+    rdfs:comment "A ITIL service like a microservice or system component." .
+
+itil:Incident a owl:Class ;
+    rdfs:label "ITIL Incident" ;
+    rdfs:comment "An unplanned interruption to a service or reduction in the quality of a service." .
+
+itil:Problem a owl:Class ;
+    rdfs:label "ITIL Problem" ;
+    rdfs:comment "A cause, or potential cause, of one or more incidents." .
+
+itil:FailureMode a owl:Class ;
+    rdfs:label "Failure Mode" ;
+    rdfs:comment "A specific type of failure class (e.g. Memory Leak, Connection Timeout)." .
+
+itil:Mitigation a owl:Class ;
+    rdfs:label "Mitigation" ;
+    rdfs:comment "An action, script, or change that resolves an incident or mitigates a failure mode." .
+
+# Properties
+itil:dependsOn a owl:ObjectProperty ;
+    rdfs:domain itil:Service ;
+    rdfs:range itil:Service ;
+    rdfs:label "dependsOn" ;
+    rdfs:comment "Relates a service to another service it depends on." .
+
+itil:causedBy a owl:ObjectProperty ;
+    rdfs:domain itil:Incident ;
+    rdfs:range itil:FailureMode ;
+    rdfs:label "causedBy" ;
+    rdfs:comment "Relates an incident to the failure mode that caused it." .
+
+itil:mitigatedBy a owl:ObjectProperty ;
+    rdfs:domain itil:Incident ;
+    rdfs:range itil:Mitigation ;
+    rdfs:label "mitigatedBy" ;
+    rdfs:comment "Relates an incident to the mitigation that resolved it." .
+
+itil:affectsService a owl:ObjectProperty ;
+    rdfs:domain itil:Incident ;
+    rdfs:range itil:Service ;
+    rdfs:label "affectsService" ;
+    rdfs:comment "Relates an incident to the service(s) affected by it." .
