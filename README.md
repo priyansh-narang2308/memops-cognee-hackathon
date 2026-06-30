@@ -2,13 +2,11 @@
 
 > Engineering teams lose the same wars over and over. MemOps fixes that — powered by **Cognee Cloud**.
 
-**Track:** Best Use of Cognee Cloud | **Team:** Solo | **Built for:** WeMakeDevs × Cognee Hackathon — "The Hangover Part AI"
-
 ---
 
 ## Declaration
 
-This project was built using AI assistants (Claude Code) for code generation, architecture planning, and documentation. All code was reviewed, tested, and validated by the human developer. AI assistance was used per hackathon rules and is declared here as required.
+This project was built using AI assistants (OpenCode & AntiGravity) for code generation, architecture planning, and documentation. All code was reviewed, tested, and validated by the human developer. AI assistance was used per hackathon rules and is declared here as required.
 
 ---
 
