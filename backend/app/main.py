@@ -302,39 +302,42 @@ async def query_incident_memory(payload: QueryRequest):
         )
 
         mitigation_proposal = None
-        user = await get_default_user()
-        datasets = await get_authorized_existing_datasets(["incidents"], "read", user)
+        try:
+            user = await get_default_user()
+            datasets = await get_authorized_existing_datasets(["incidents"], "read", user)
 
-        if datasets:
-            async with set_database_global_context_variables(
-                datasets[0].id, datasets[0].owner_id
-            ):
-                graph_engine = await get_graph_engine()
-                nodes_data, _ = await graph_engine.get_graph_data()
+            if datasets:
+                async with set_database_global_context_variables(
+                    datasets[0].id, datasets[0].owner_id
+                ):
+                    graph_engine = await get_graph_engine()
+                    nodes_data, _ = await graph_engine.get_graph_data()
 
-                for node_id, node_info in nodes_data:
-                    if node_info.get("type") == "Mitigation" or "Mitigation" in str(
-                        node_info.get("attributes", {}).get("type", "")
-                    ):
-                        cmd = node_info.get("command_to_run") or node_info.get(
-                            "attributes", {}
-                        ).get("command_to_run")
-                        desc = node_info.get("description") or node_info.get(
-                            "attributes", {}
-                        ).get("description")
-                        if cmd:
-                            query_words = set(payload.query.lower().split())
-                            desc_words = set(desc.lower().split()) if desc else set()
-                            if query_words.intersection(desc_words) or any(
-                                word in payload.query.lower()
-                                for word in ["fix", "resolve", "mitigate", "restart"]
-                            ):
-                                mitigation_proposal = {
-                                    "description": desc
-                                    or "Proposed mitigation command",
-                                    "command": cmd,
-                                }
-                                break
+                    for node_id, node_info in nodes_data:
+                        if node_info.get("type") == "Mitigation" or "Mitigation" in str(
+                            node_info.get("attributes", {}).get("type", "")
+                        ):
+                            cmd = node_info.get("command_to_run") or node_info.get(
+                                "attributes", {}
+                            ).get("command_to_run")
+                            desc = node_info.get("description") or node_info.get(
+                                "attributes", {}
+                            ).get("description")
+                            if cmd:
+                                query_words = set(payload.query.lower().split())
+                                desc_words = set(desc.lower().split()) if desc else set()
+                                if query_words.intersection(desc_words) or any(
+                                    word in payload.query.lower()
+                                    for word in ["fix", "resolve", "mitigate", "restart"]
+                                ):
+                                    mitigation_proposal = {
+                                        "description": desc
+                                        or "Proposed mitigation command",
+                                        "command": cmd,
+                                    }
+                                    break
+        except Exception:
+            pass
 
         search_results["mitigation_proposal"] = mitigation_proposal
         return search_results
