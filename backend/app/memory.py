@@ -124,50 +124,6 @@ async def search_memory(
     }
 
 
-async def search_temporal(
-    query: str,
-    session_id: Optional[str] = None,
-) -> Dict[str, Any]:
-    return await search_memory(
-        query=query,
-        search_type="TEMPORAL",
-        session_id=session_id,
-    )
-
-
-async def search_graph_completion(
-    query: str,
-    session_id: Optional[str] = None,
-    feedback_influence: float = 0.0,
-) -> Dict[str, Any]:
-    return await search_memory(
-        query=query,
-        search_type="GRAPH_COMPLETION",
-        session_id=session_id,
-        feedback_influence=feedback_influence,
-    )
-
-
-async def search_triplet(
-    query: str,
-) -> Dict[str, Any]:
-    return await search_memory(
-        query=query,
-        search_type="TRIPLET_COMPLETION",
-    )
-
-
-async def search_hybrid(
-    query: str,
-    session_id: Optional[str] = None,
-) -> Dict[str, Any]:
-    return await search_memory(
-        query=query,
-        search_type="HYBRID_COMPLETION",
-        session_id=session_id,
-    )
-
-
 # ─────────────────────────────────────────────────────────
 # IMPROVE (memify)
 # ─────────────────────────────────────────────────────────

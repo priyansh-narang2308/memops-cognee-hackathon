@@ -1,0 +1,19 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "memops-mcp"
+version = "0.1.0"
+description = "MemOps SRE Memory MCP Server — 6 tools mapping to Cognee's 4 lifecycle verbs"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp>=1.0.0",
+    "cognee==1.2.1",
+    "fastapi>=0.111.0",
+    "pydantic>=2.7.4",
+    "python-dotenv>=1.0.1",
+]
+
+[project.scripts]
+memops-mcp = "mcp_server.__main__:main"

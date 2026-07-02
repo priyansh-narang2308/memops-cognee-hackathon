@@ -1,13 +1,13 @@
 services:
   memops-api:
-    build: ./memops_backend
+    build: ./backend
     ports:
       - "8000:8000"
     env_file:
-      - ./memops_backend/.env
+      - ./backend/.env
     volumes:
-      - ./memops_backend/.cognee_system:/app/.cognee_system
-      - ./memops_backend/.data_storage:/app/.data_storage
+      - ./backend/.cognee_system:/app/.cognee_system
+      - ./backend/.data_storage:/app/.data_storage
     depends_on:
       redis:
         condition: service_started
@@ -22,7 +22,7 @@ services:
     restart: unless-stopped
 
   memops-frontend:
-    build: ./memops_frontend
+    build: ./frontend
     ports:
       - "3000:3000"
     environment:

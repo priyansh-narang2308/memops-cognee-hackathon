@@ -68,7 +68,3 @@ async def post_mortem_analyzer_agent(incident_text: str) -> Dict[str, Any]:
         response_model=PostMortemAnalysis,
     )
     return analysis.model_dump()
-
-
-async def on_call_sre_agent_direct(incident_text: str) -> Dict[str, Any]:
-    return await on_call_sre_agent(incident_text)

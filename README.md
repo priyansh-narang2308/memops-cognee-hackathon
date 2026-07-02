@@ -79,20 +79,21 @@ await cognee.forget(dataset="legacy-monolith-incidents")
 
 | Cognee Feature      | MemOps Implementation                                                                                                                                                                                                                   |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `remember()`        | 8-task custom pipeline: normalize → LLM extraction → temporal → ontology validation (ITIL RDF) → dependency extraction → graph linking → provenance → data points                                                                       |
+| `remember()`        | 7-task custom pipeline: normalize → LLM extraction → temporal → ontology validation (ITIL RDF) → dependency extraction → provenance → data points                                                                                       |
 | `recall()`          | 10 SearchTypes: GRAPH_COMPLETION, TEMPORAL, TRIPLET_COMPLETION, VECTOR_SEARCH, RAG_COMPLETION, GRAPH_COMPLETION_COT, GRAPH_COMPLETION_DECOMPOSITION, NATURAL_LANGUAGE, SUMMARIES, HYBRID_COMPLETION — auto-routes based on query intent |
 | `improve()`         | Triggers after every feedback submission. Adjusts graph edge weights. Bridges session memory into permanent graph.                                                                                                                      |
 | `forget()`          | Granular deletion: single node, entire dataset, or everything. For deprecated services and GDPR compliance.                                                                                                                             |
-| Custom DataPoints   | 9 types: Service, Incident, FailureMode, Mitigation, Engineer, Alert, ArchitecturalDecision, Runbook, PostMortem                                                                                                                        |
-| Custom Pipeline     | 8 Task pipeline with `PipelineContext` carrying incident_id, severity, team across all stages                                                                                                                                           |
+| Custom DataPoints   | 10 types: Service, Incident, FailureMode, Mitigation, Engineer, Alert, ArchitecturalDecision, Runbook, PostMortem, IncidentSummary                                                                                                      |
+| Custom Pipeline     | 7 Task pipeline with `PipelineContext` carrying incident_id, severity, team across all stages                                                                                                                                           |
 | Ontology            | ITIL subset (RDF/TTL via RDFLib) — every node gets `ontology_valid=True` + parent-class edges                                                                                                                                           |
 | Temporal Mode       | `temporal_cognify=True` — events with timestamps for time-aware queries                                                                                                                                                                 |
-| Multi-User          | 2 tenants, 2 users, 2 roles, 6 datasets with Cognee ACL isolation                                                                                                                                                                       |
+| Multi-User          | 2 tenants, 2 users, 2 roles, 7 datasets with Cognee ACL isolation                                                                                                                                                                       |
 | Session Memory      | Each investigation gets a `session_id` — LLM receives full conversation history                                                                                                                                                         |
 | Agent Decorator     | `@cognee.agent_memory` on `on_call_sre_agent` and `post_mortem_analyzer_agent`                                                                                                                                                          |
 | Graph Visualization | Live 3D force-directed graph with blast radius, pulse animations, provenance tooltips                                                                                                                                                   |
 | Feedback Learning   | SRE rates recall quality → `improve()` → next recall is better                                                                                                                                                                          |
 | Provenance          | Every graph node links back to the source post-mortem                                                                                                                                                                                   |
+| MCP Server          | 6 tools at `/mcp` — drop into Claude Code, Cursor, Windsurf, Cline with one line                                                                                                                                                        |
 
 ---
 
@@ -119,7 +120,7 @@ This makes the **blast radius of institutional knowledge visible** — something
 | **Memory**     | Cognee Cloud (`api.cognee.ai`) — all operations routed via `cognee.serve()` |
 | **LLM**        | Gemini Flash (structured output for entity extraction)                      |
 | **Embeddings** | fastembed (`BAAI/bge-small-en-v1.5`)                                        |
-| **Backend**    | Python 3.13, FastAPI, 28 REST endpoints                                     |
+| **Backend**    | Python 3.13, FastAPI, 28 REST endpoints + MCP server                                                   |
 | **Frontend**   | Next.js 16, React, Three.js, Framer Motion, Tailwind CSS                    |
 | **Ontology**   | ITIL subset (RDF/TTL via RDFLib)                                            |
 | **Deploy**     | Docker Compose (API + Redis + Frontend)                                     |
@@ -131,25 +132,49 @@ This makes the **blast radius of institutional knowledge visible** — something
 
 ```bash
 # 1. Backend
-cd memops_backend
+cd backend
 cp .env.example .env
 # Set your COGNEE_API_KEY and GEMINI_API_KEY
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 
 # 2. Frontend
-cd memops_frontend
+cd frontend
 npm install
 npm run dev
 ```
 
-Open **http://localhost:3000** → Click "Launch Console" → 6-tab dashboard.
+Open **http://localhost:3000** → Click "Launch Console" → 8-tab dashboard.
+
+### Connect Your Agent (MCP)
+
+```bash
+# Claude Code — one line, no install
+claude mcp add --transport http memops http://localhost:8000/mcp
+
+# Cursor / Cline (~/.cursor/mcp.json)
+# { "mcpServers": { "memops": { "url": "http://localhost:8000/mcp" } } }
+
+# Windsurf (~/.codeium/windsurf/mcp_config.json)
+# { "mcpServers": { "memops": { "serverUrl": "http://localhost:8000/mcp" } } }
+```
+
+### 6 MCP Tools
+
+| Tool | Cognee Verb | What it does |
+|------|-------------|-------------|
+| `get_trusted_context` | recall | Trusted context pack — only memories passing all 4 checks |
+| `audit_context` | recall | Per-memory verdicts — approved/blocked with reasons |
+| `remember` | remember | Store a durable fact, auto-redacts secrets |
+| `forget_memory` | forget | Delete a memory from graph + vector store |
+| `improve_rules` | improve | Distill reusable rules from sessions |
+| `list_incident_rules` | recall | Retrieve distilled SRE rules |
 
 ### Run Tests
 
 ```bash
-cd memops_backend
-source .venv/bin/activate
+cd backend
+source venv/bin/activate
 pytest tests/ -v  # 60 tests, all passing
 ```
 

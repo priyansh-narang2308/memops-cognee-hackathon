@@ -48,6 +48,26 @@ from app.agents import on_call_sre_agent, post_mortem_analyzer_agent
 
 app = FastAPI(title="MemOps SRE Memory Engine")
 
+MCP_MOUNTED = False
+try:
+    from mcp.server.fastmcp import FastMCP as _FastMCP
+    from mcp_server.server import register_tools as _register_mcp_tools
+
+    _mcp = _FastMCP(
+        "MemOps SRE Memory",
+        instructions=(
+            "SRE memory platform powered by Cognee. Use get_trusted_context to "
+            "recall trusted memories, audit_context for per-memory verdicts, "
+            "remember to store facts, forget_memory to delete, improve_rules "
+            "to distill rules, and list_incident_rules to retrieve them."
+        ),
+    )
+    _register_mcp_tools(_mcp)
+    app.mount("/mcp", _mcp.sse_app())
+    MCP_MOUNTED = True
+except Exception:
+    pass
+
 CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "*").split(",")
 app.add_middleware(
     CORSMiddleware,

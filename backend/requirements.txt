@@ -8,4 +8,5 @@ openai>=1.35.3
 anthropic>=0.29.0
 requests>=2.32.3
 fastembed>=0.3.0
+mcp>=1.0.0
 ladybug>=0.16.0
