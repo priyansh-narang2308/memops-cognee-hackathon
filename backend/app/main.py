@@ -1,5 +1,6 @@
 import app._env  # noqa: F401 — loads .env before anything else
 
+import asyncio
 import os
 import shlex
 import subprocess
@@ -16,6 +17,8 @@ from cognee.modules.visualization.preprocessor import preprocess
 from cognee.modules.users.methods import get_default_user
 from cognee.modules.data.methods import get_authorized_existing_datasets
 from cognee.context_global_variables import set_database_global_context_variables
+from cognee.infrastructure.llm.LLMGateway import LLMGateway
+
 
 from app.memory import (
     add_incident_report,
@@ -804,6 +807,7 @@ async def load_demo_data(dataset: str = "incidents"):
                 "title": incident["title"],
                 "status": result.get("status", "unknown"),
             })
+            await asyncio.sleep(4)
         return {
             "status": "success",
             "message": f"Loaded {len(loaded)} incidents into '{dataset}'",
@@ -826,7 +830,6 @@ async def compare_stateless_vs_cognee(payload: CompareRequest):
     """DEMO — Side-by-side: stateless LLM vs Cognee memory-powered. The killer comparison."""
     try:
         # Stateless: raw LLM with no memory
-        from cognee.infrastructure.llm.LLMGateway import LLMGateway
 
         stateless_prompt = (
             "You are an SRE. Answer this question based only on what I tell you right now. "

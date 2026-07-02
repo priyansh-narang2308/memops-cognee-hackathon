@@ -85,6 +85,8 @@ async def main():
     for idx, report in enumerate(incident_reports):
         print(f"Ingesting report {idx + 1}/{len(incident_reports)}...")
         await add_incident_report(text=report, dataset_name="incidents")
+        # Pause 4 seconds to respect Google Gemini Free Tier 20 RPM quota
+        await asyncio.sleep(4)
     print(f"All {len(incident_reports)} sample reports ingested successfully!")
 
 if __name__ == "__main__":
