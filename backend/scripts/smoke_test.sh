@@ -32,7 +32,7 @@ test_endpoint() {
   fi
 
   http_code=$(echo "$response" | tail -1)
-  body_response=$(echo "$response" | head -n -1)
+  body_response=$(echo "$response" | sed '$d')
 
   if [ "$http_code" = "$expect_code" ]; then
     PASS=$((PASS + 1))
