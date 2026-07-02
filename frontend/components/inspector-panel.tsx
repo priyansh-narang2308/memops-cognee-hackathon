@@ -1,6 +1,7 @@
 "use client";
 
-import { GraphNode, MitigationResponse } from "@/lib/api";
+import { useState } from "react";
+import { GraphNode, MitigationResponse, exportMemoryData, summarizeIncident } from "@/lib/api";
 import {
   Play,
   ShieldAlert,
@@ -9,8 +10,12 @@ import {
   Activity,
   Trash2,
   Radio,
+  Download,
+  FileText,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface InspectorPanelProps {
   selectedNode: GraphNode | null;
@@ -31,8 +36,47 @@ export default function InspectorPanel({
   isExecuting,
   onForgetNode,
   onToggleOutageSimulation,
-  isOutageSimulated = false,
+  isOutageSimulated,
 }: InspectorPanelProps) {
+  const [isExporting, setIsExporting] = useState(false);
+  const [isSummarizing, setIsSummarizing] = useState(false);
+  const [summary, setSummary] = useState<string | null>(null);
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const res = await exportMemoryData("incidents");
+      const blob = new Blob([JSON.stringify(res, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `memops-export-${new Date().toISOString().split("T")[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Memory graph exported successfully");
+    } catch (e: unknown) {
+      toast.error(`Export failed: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleSummarize = async () => {
+    if (!selectedNode) return;
+    setIsSummarizing(true);
+    setSummary(null);
+    try {
+      const attrs = selectedNode.attributes || {};
+      const text = attrs.raw_text || attrs.description || selectedNode.name || "";
+      const res = await summarizeIncident(text, selectedNode.name);
+      setSummary(res.summary || res.result || JSON.stringify(res));
+      toast.success("Incident summarized");
+    } catch (e: unknown) {
+      toast.error(`Summarize failed: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setIsSummarizing(false);
+    }
+  };
   const getIcon = (type?: string) => {
     switch (type) {
       case "Incident":
@@ -252,6 +296,41 @@ export default function InspectorPanel({
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {selectedNode && (
+          <div className="border-t border-[#e6dfd8] pt-4 space-y-2">
+            <h4 className="text-xs font-mono text-[#6c6a64] uppercase tracking-wider">
+              Node Actions
+            </h4>
+            <div className="flex gap-2">
+              <Button
+                onClick={handleExport}
+                disabled={isExporting}
+                variant="outline"
+                size="sm"
+                className="font-mono text-[10px] border-[#e6dfd8] text-[#3d3d3a] hover:bg-[#f5f0e8] gap-1.5"
+              >
+                {isExporting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
+                Export Graph
+              </Button>
+              <Button
+                onClick={handleSummarize}
+                disabled={isSummarizing}
+                variant="outline"
+                size="sm"
+                className="font-mono text-[10px] border-[#e6dfd8] text-[#3d3d3a] hover:bg-[#f5f0e8] gap-1.5"
+              >
+                {isSummarizing ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileText className="w-3 h-3" />}
+                Summarize
+              </Button>
+            </div>
+            {summary && (
+              <div className="bg-[#f5f0e8] border border-[#e6dfd8] rounded p-3 text-xs text-[#3d3d3a] font-mono">
+                {summary}
+              </div>
+            )}
           </div>
         )}
       </div>

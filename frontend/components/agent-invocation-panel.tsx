@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { invokeSreAgent, invokePostmortemAgent } from "@/lib/api";
+import { useState, useEffect } from "react";
+import { invokeSreAgent, invokePostmortemAgent, registerAgent, registerAgentSession } from "@/lib/api";
 import {
   Bot,
   Play,
@@ -21,6 +21,18 @@ export default function AgentInvocationPanel() {
   const [activeAgent, setActiveAgent] = useState<"sre" | "postmortem">("sre");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<Record<string, unknown> | null>(null);
+
+  useEffect(() => {
+    const register = async () => {
+      try {
+        await registerAgent("on_call_sre", ["incidents"]);
+        await registerAgent("post_mortem_analyzer", ["incidents"]);
+      } catch {
+        // Registration may fail if already registered — that's fine
+      }
+    };
+    register();
+  }, []);
 
   const handleInvoke = async () => {
     if (!incidentText.trim()) {

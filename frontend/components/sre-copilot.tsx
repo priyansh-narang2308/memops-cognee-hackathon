@@ -13,6 +13,7 @@ import {
   Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import MemoryBadges from "@/components/memory-badges";
 import { toast } from "sonner";
 
 interface Message {
@@ -314,6 +315,7 @@ export default function SRECopilot({
                 <div className="whitespace-pre-wrap font-sans text-xs">
                   {msg.text}
                 </div>
+                {msg.role === "assistant" && <MemoryBadges result={msg.text} />}
                 {msg.role === "assistant" && (
                   <div className="flex items-center justify-between border-t border-[#e6dfd8]/80 mt-2.5 pt-2 gap-4">
                     <div className="flex items-center gap-2.5">
