@@ -40,6 +40,80 @@ MemOps gives engineering teams a **permanent, evolving, hybrid graph-vector memo
 
 ---
 
+## System Architecture
+
+MemOps is structured as a cloud-native, real-time SRE intelligence platform powered by **Cognee Cloud** (`api.cognee.ai`).
+
+```mermaid
+graph TB
+    subgraph Ingestion ["1. Data Sources & Ingestion"]
+        A1[PagerDuty / Datadog Alerts] --> B[MemOps FastAPI Gateway]
+        A2[Confluence Post-Mortems] --> B
+        A3[Runbooks & Architecture Docs] --> B
+    end
+
+    subgraph Pipeline ["2. MemOps 8-Task Custom Pipeline"]
+        B --> C1[Normalize & Chunk Text]
+        C1 --> C2[LLM Entity Extraction<br/>Gemini Flash]
+        C2 --> C3[Temporal Timestamping]
+        C3 --> C4[ITIL Ontology Validation<br/>RDFLib / TTL]
+        C4 --> C5[Dependency & Provenance Mapping]
+    end
+
+    subgraph CogneeCloud ["3. Cognee Cloud Memory Engine (api.cognee.ai)"]
+        C5 --> D1[remember:<br/>Graph + Vector Index]
+        D1 --> D2[(Hybrid Knowledge Graph<br/>& fastembed Store)]
+        D2 --> D3[recall:<br/>10 Multi-Intent SearchTypes]
+        D3 --> D4[improve:<br/>Continuous Feedback Learning]
+        D2 -.-> D5[forget:<br/>Selective GDPR Pruning]
+    end
+
+    subgraph Clients ["4. Multi-Interface Consumption Layer"]
+        D3 --> E1[Next.js 16 3D War Room<br/>Three.js Blast Radius Simulation]
+        D3 --> E2[Autonomous SRE Agents<br/>@cognee.agent_memory]
+        D3 --> E3[MCP Server Tools<br/>Claude Code / Cursor / Windsurf]
+    end
+
+    style Ingestion fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#fff
+    style Pipeline fill:#0f172a,stroke:#a855f7,stroke-width:2px,color:#fff
+    style CogneeCloud fill:#0f172a,stroke:#10b981,stroke-width:2px,color:#fff
+    style Clients fill:#0f172a,stroke:#f59e0b,stroke-width:2px,color:#fff
+```
+
+### Data Flow Breakdown
+
+```text
++-----------------------------------------------------------------------------------+
+|                            1. INGESTION & DATA SOURCES                            |
+|    [Post-Mortems]       [PagerDuty Alerts]      [Runbooks]     [Git Commits]      |
++-------------------------------------------------+---------------------------------+
+                                                  |
+                                                  v
++-----------------------------------------------------------------------------------+
+|                        2. MEMOPS 8-TASK PROCESSING PIPELINE                       |
+|   Normalize -> Entity Extraction (Gemini) -> Temporal -> ITIL Ontology (RDFLib)   |
+|                 -> Dependency Mapping -> Provenance -> NodeSets                   |
++-------------------------------------------------+---------------------------------+
+                                                  |
+                                                  v
++-----------------------------------------------------------------------------------+
+|                    3. COGNEE CLOUD MEMORY CORE (api.cognee.ai)                    |
+|  +-------------------+  +--------------------+  +----------------+  +----------+  |
+|  |    remember()     |  |      recall()      |  |   improve()    |  | forget() |  |
+|  | Graph & Vectors   |  |   10 SearchTypes   |  | Edge Weighting |  | Pruning  |  |
+|  +-------------------+  +--------------------+  +----------------+  +----------+  |
++-------------------------------------------------+---------------------------------+
+                                                  |
+                                                  v
++-----------------------------------------------------------------------------------+
+|                         4. MULTI-CHANNEL CONSUMPTION LAYER                        |
+|   [Next.js 3D War Room]        [SRE On-Call Agents]         [6 MCP Server Tools]  |
+|    Blast Radius Visuals         @cognee.agent_memory         Cursor / Claude Code |
++-----------------------------------------------------------------------------------+
+```
+
+---
+
 ## How Cognee Powers Every Feature
 
 ### Core Memory Lifecycle
@@ -120,7 +194,7 @@ This makes the **blast radius of institutional knowledge visible** — something
 | **Memory**     | Cognee Cloud (`api.cognee.ai`) — all operations routed via `cognee.serve()` |
 | **LLM**        | Gemini Flash (structured output for entity extraction)                      |
 | **Embeddings** | fastembed (`BAAI/bge-small-en-v1.5`)                                        |
-| **Backend**    | Python 3.13, FastAPI, 28 REST endpoints + MCP server                                                   |
+| **Backend**    | Python 3.13, FastAPI, 28 REST endpoints + MCP server                        |
 | **Frontend**   | Next.js 16, React, Three.js, Framer Motion, Tailwind CSS                    |
 | **Ontology**   | ITIL subset (RDF/TTL via RDFLib)                                            |
 | **Deploy**     | Docker Compose (API + Redis + Frontend)                                     |
@@ -161,14 +235,14 @@ claude mcp add --transport http memops http://localhost:8000/mcp
 
 ### 6 MCP Tools
 
-| Tool | Cognee Verb | What it does |
-|------|-------------|-------------|
-| `get_trusted_context` | recall | Trusted context pack — only memories passing all 4 checks |
-| `audit_context` | recall | Per-memory verdicts — approved/blocked with reasons |
-| `remember` | remember | Store a durable fact, auto-redacts secrets |
-| `forget_memory` | forget | Delete a memory from graph + vector store |
-| `improve_rules` | improve | Distill reusable rules from sessions |
-| `list_incident_rules` | recall | Retrieve distilled SRE rules |
+| Tool                  | Cognee Verb | What it does                                              |
+| --------------------- | ----------- | --------------------------------------------------------- |
+| `get_trusted_context` | recall      | Trusted context pack — only memories passing all 4 checks |
+| `audit_context`       | recall      | Per-memory verdicts — approved/blocked with reasons       |
+| `remember`            | remember    | Store a durable fact, auto-redacts secrets                |
+| `forget_memory`       | forget      | Delete a memory from graph + vector store                 |
+| `improve_rules`       | improve     | Distill reusable rules from sessions                      |
+| `list_incident_rules` | recall      | Retrieve distilled SRE rules                              |
 
 ### Run Tests
 
