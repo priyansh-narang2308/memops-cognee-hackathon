@@ -27,6 +27,7 @@ export default function AgentInvocationPanel() {
       try {
         await registerAgent("on_call_sre", ["incidents"]);
         await registerAgent("post_mortem_analyzer", ["incidents"]);
+        await registerAgentSession("on_call_sre", "default_sre_session", ["incidents"]);
       } catch {
         // Registration may fail if already registered — that's fine
       }

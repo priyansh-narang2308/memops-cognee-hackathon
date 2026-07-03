@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { GraphNode, MitigationResponse, exportMemoryData, summarizeIncident } from "@/lib/api";
+import { GraphNode, MitigationResponse, exportMemoryData, summarizeIncident, updateMemoryEntry, pushToDataset } from "@/lib/api";
 import {
   Play,
   ShieldAlert,
@@ -13,6 +13,8 @@ import {
   Download,
   FileText,
   Loader2,
+  Edit3,
+  Share2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
